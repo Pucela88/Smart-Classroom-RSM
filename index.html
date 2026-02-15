@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Classroom Manager - TTC de la Salle Byumba</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-medium: #1e293b;
+            --bg-light: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            position: relative;
+        }
+
+        .logo-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-upload {
+            display: none;
+        }
+
+        .logo-text h1 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.3;
+        }
+
+        .logo-text p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .nav-item {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-left-color: var(--primary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.2);
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .action-bar-left {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .action-bar-right {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.3), transparent);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .resource-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .resource-item {
+            background: rgba(51, 65, 85, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            gap: 1rem;
+        }
+
+        .resource-item:hover {
+            background: rgba(51, 65, 85, 0.6);
+            border-color: var(--primary);
+        }
+
+        .resource-info {
+            flex: 1;
+        }
+
+        .resource-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .resource-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .resource-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-available {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-in-use {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .status-maintenance {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .status-archived {
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .schedule-day {
+            background: rgba(51, 65, 85, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-day:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+        }
+
+        .day-header {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .day-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .day-events {
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+        }
+
+        .event-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--bg-medium);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 1.5rem;
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-input[type="date"] {
+            color-scheme: dark;
+        }
+
+        .form-input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.7) sepia(1) saturate(5) hue-rotate(10deg);
+            cursor: pointer;
+        }
+
+        input[type="date"] {
+            color-scheme: dark;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.6) sepia(1) saturate(5) hue-rotate(15deg);
+            cursor: pointer;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .footer {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .footer-section p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .contact-item strong {
+            color: var(--text-primary);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table th {
+            background: rgba(99, 102, 241, 0.1);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        .table tr:hover {
+            background: rgba(51, 65, 85, 0.4);
+        }
+
+        input[type="checkbox"] {
+            accent-color: var(--primary);
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .setting-item:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .setting-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                z-index: 999;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .schedule-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-bar {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const Icons = {
+            Dashboard: () => (
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+            ),
+            Resources: () => (
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+            ),
+            Schedule: () => (
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            ),
+            Users: () => (
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            ),
+            Analytics: () => (
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            ),
+            Settings: () => (
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            ),
+            Plus: () => (
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+            ),
+            Download: () => (
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+            ),
+            Upload: () => (
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+            ),
+            Trash: () => (
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            ),
+            Archive: () => (
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+            ),
+            X: () => (
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            )
+        };
+
+        const SmartClassroomApp = () => {
+            const [currentView, setCurrentView] = useState('dashboard');
+            const [showModal, setShowModal] = useState(false);
+            const [modalType, setModalType] = useState('');
+            const [resources, setResources] = useState([]);
+            const [bookings, setBookings] = useState([]);
+            const [users, setUsers] = useState([]);
+            const [logo, setLogo] = useState('');
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
+            const [showLogin, setShowLogin] = useState(true);
+            const [loginAttempts, setLoginAttempts] = useState(0);
+            const [adminName, setAdminName] = useState('');
+            
+            // Admin Credentials - Venant Tuyisingize
+            const ADMIN_CREDENTIALS = {
+                name: 'Venant Tuyisingize',
+                email: 'vepucela22@gmail.com',
+                alternateEmail: 'delasallettc@yahoo.fr',
+                phone: '+250786480036',
+                accessKey: 'TTC-ADMIN-2026',  // Simple access key
+                pin: '480036' // Last 6 digits of phone
+            };
+            
+            const [currentUserRole, setCurrentUserRole] = useState('Admin'); // Default: Admin, can be 'Teacher', 'Student', 'Staff'
+            const [settings, setSettings] = useState({
+                schoolName: 'TTC de la Salle Byumba',
+                emailNotifications: true,
+                bookingReminders: true,
+                maintenanceAlerts: true,
+                defaultBookingDuration: '60',
+                autoArchiveOldBookings: false,
+                language: 'en',
+                theme: 'dark',
+                formspreeEnabled: false,
+                formspreeEndpoint: 'https://formspree.io/f/YOUR_FORM_ID'
+            });
+
+            useEffect(() => {
+                loadData();
+            }, []);
+
+            const loadData = () => {
+                const savedLogo = localStorage.getItem('school-logo');
+                if (savedLogo) setLogo(savedLogo);
+
+                const savedSettings = localStorage.getItem('smart-classroom-settings');
+                if (savedSettings) setSettings(JSON.parse(savedSettings));
+
+                const savedResources = localStorage.getItem('smart-classroom-resources');
+                if (savedResources) {
+                    setResources(JSON.parse(savedResources));
+                } else {
+                    const sampleResources = [
+                        { id: '1', name: 'XO Laptop Set (40 units)', type: 'XO Laptop', status: 'available', location: 'Room 1', lastMaintenance: '2024-01-15', archived: false },
+                        { id: '2', name: 'Lenovo Laptop', type: 'Lenovo Laptop', status: 'in-use', location: 'Room 2', lastMaintenance: '2024-01-10', archived: false },
+                        { id: '3', name: 'Screen Projector', type: 'Screen Projector', status: 'available', location: 'Room 3', lastMaintenance: '2024-01-20', archived: false },
+                        { id: '4', name: 'Coding Lab Equipment', type: 'Coding Lab', status: 'maintenance', location: 'Room 1', lastMaintenance: '2024-01-05', archived: false },
+                    ];
+                    setResources(sampleResources);
+                    localStorage.setItem('smart-classroom-resources', JSON.stringify(sampleResources));
+                }
+
+                const savedBookings = localStorage.getItem('smart-classroom-bookings');
+                if (savedBookings) {
+                    setBookings(JSON.parse(savedBookings));
+                } else {
+                    const sampleBookings = [
+                        { id: '1', resourceId: '2', teacher: 'Ms. Johnson', date: '2024-02-12', time: '09:00-10:30', subject: 'Mathematics', status: 'active', archived: false },
+                        { id: '2', resourceId: '1', teacher: 'Mr. Smith', date: '2024-02-12', time: '11:00-12:00', subject: 'Science', status: 'upcoming', archived: false },
+                    ];
+                    setBookings(sampleBookings);
+                    localStorage.setItem('smart-classroom-bookings', JSON.stringify(sampleBookings));
+                }
+
+                const savedUsers = localStorage.getItem('smart-classroom-users');
+                if (savedUsers) {
+                    setUsers(JSON.parse(savedUsers));
+                } else {
+                    const sampleUsers = [
+                        { id: '1', name: 'Ms. Johnson', role: 'Teacher', email: 'johnson@delasallettc.edu', department: 'Mathematics', archived: false },
+                        { id: '2', name: 'Mr. Smith', role: 'Teacher', email: 'smith@delasallettc.edu', department: 'Science', archived: false },
+                        { id: '3', name: 'Admin User', role: 'Admin', email: 'admin@delasallettc.edu', department: 'Administration', archived: false },
+                    ];
+                    setUsers(sampleUsers);
+                    localStorage.setItem('smart-classroom-users', JSON.stringify(sampleUsers));
+                }
+            };
+
+            const handleLogoUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setLogo(reader.result);
+                        localStorage.setItem('school-logo', reader.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const exportToCSV = (data, filename) => {
+                if (data.length === 0) {
+                    alert('No data to export');
+                    return;
+                }
+
+                const headers = Object.keys(data[0]).filter(key => key !== 'archived');
+                const csvContent = [
+                    headers.join(','),
+                    ...data.map(row => 
+                        headers.map(header => `"${row[header] || ''}"`).join(',')
+                    )
+                ].join('\n');
+
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            };
+
+            const exportAllData = () => {
+                const allData = {
+                    resources: resources.filter(r => !r.archived),
+                    bookings: bookings.filter(b => !b.archived),
+                    users: users.filter(u => !u.archived),
+                    settings: settings,
+                    exported: new Date().toISOString()
+                };
+
+                const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `smart-classroom-backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                alert('All data exported successfully!');
+            };
+
+            const restoreData = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const data = JSON.parse(event.target.result);
+                            if (data.resources) {
+                                setResources(data.resources);
+                                localStorage.setItem('smart-classroom-resources', JSON.stringify(data.resources));
+                            }
+                            if (data.bookings) {
+                                setBookings(data.bookings);
+                                localStorage.setItem('smart-classroom-bookings', JSON.stringify(data.bookings));
+                            }
+                            if (data.users) {
+                                setUsers(data.users);
+                                localStorage.setItem('smart-classroom-users', JSON.stringify(data.users));
+                            }
+                            if (data.settings) {
+                                setSettings(data.settings);
+                                localStorage.setItem('smart-classroom-settings', JSON.stringify(data.settings));
+                            }
+                            alert('Data restored successfully!');
+                            window.location.reload();
+                        } catch (error) {
+                            alert('Error restoring data. Please check the file format.');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+
+            const deleteItem = (id, type) => {
+                if (!confirm('Are you sure you want to permanently delete this item?')) return;
+
+                if (type === 'resource') {
+                    const updated = resources.filter(r => r.id !== id);
+                    setResources(updated);
+                    localStorage.setItem('smart-classroom-resources', JSON.stringify(updated));
+                } else if (type === 'booking') {
+                    const updated = bookings.filter(b => b.id !== id);
+                    setBookings(updated);
+                    localStorage.setItem('smart-classroom-bookings', JSON.stringify(updated));
+                } else if (type === 'user') {
+                    const updated = users.filter(u => u.id !== id);
+                    setUsers(updated);
+                    localStorage.setItem('smart-classroom-users', JSON.stringify(updated));
+                }
+            };
+
+            const archiveItem = (id, type) => {
+                if (type === 'resource') {
+                    const updated = resources.map(r => 
+                        r.id === id ? { ...r, archived: !r.archived } : r
+                    );
+                    setResources(updated);
+                    localStorage.setItem('smart-classroom-resources', JSON.stringify(updated));
+                } else if (type === 'booking') {
+                    const updated = bookings.map(b => 
+                        b.id === id ? { ...b, archived: !b.archived } : b
+                    );
+                    setBookings(updated);
+                    localStorage.setItem('smart-classroom-bookings', JSON.stringify(updated));
+                } else if (type === 'user') {
+                    const updated = users.map(u => 
+                        u.id === id ? { ...u, archived: !u.archived } : u
+                    );
+                    setUsers(updated);
+                    localStorage.setItem('smart-classroom-users', JSON.stringify(updated));
+                }
+            };
+
+            const openModal = (type) => {
+                setModalType(type);
+                setShowModal(true);
+            };
+
+            const closeModal = () => {
+                setShowModal(false);
+                setModalType('');
+            };
+
+            const addResource = (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const newResource = {
+                    id: Date.now().toString(),
+                    name: formData.get('name'),
+                    type: formData.get('type'),
+                    status: formData.get('status'),
+                    location: formData.get('location'),
+                    lastMaintenance: formData.get('lastMaintenance'),
+                    archived: false
+                };
+                const updated = [...resources, newResource];
+                setResources(updated);
+                localStorage.setItem('smart-classroom-resources', JSON.stringify(updated));
+                closeModal();
+                e.target.reset();
+            };
+
+            const addBooking = (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const resourceInput = formData.get('resourceInput');
+                
+                // Allow any resource text - no strict validation
+                let resourceId = 'custom-' + Date.now();
+                const existingResource = activeResources.find(r => 
+                    r.name.toLowerCase().trim() === resourceInput.toLowerCase().trim()
+                );
+                
+                if (existingResource) {
+                    resourceId = existingResource.id;
+                }
+                
+                const newBooking = {
+                    id: Date.now().toString(),
+                    resourceId: resourceId,
+                    resourceName: resourceInput,
+                    teacher: formData.get('teacher'),
+                    date: formData.get('date'),
+                    time: formData.get('time'),
+                    subject: formData.get('subject'),
+                    status: 'upcoming',
+                    archived: false
+                };
+                
+                // Save to localStorage
+                const updated = [newBooking, ...bookings];
+                setBookings(updated);
+                localStorage.setItem('smart-classroom-bookings', JSON.stringify(updated));
+                
+                // Send email notification via Formspree (if enabled)
+                if (settings.formspreeEnabled && settings.formspreeEndpoint && settings.formspreeEndpoint !== 'https://formspree.io/f/YOUR_FORM_ID') {
+                    const emailData = {
+                        resource: resourceInput,
+                        teacher: formData.get('teacher'),
+                        date: formData.get('date'),
+                        time: formData.get('time'),
+                        subject: formData.get('subject'),
+                        _subject: `New Booking: ${resourceInput} - ${formData.get('date')}`,
+                        _replyto: 'delasallettc@yahoo.fr'
+                    };
+                    
+                    fetch(settings.formspreeEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(emailData)
+                    }).then(response => {
+                        if (response.ok) {
+                            console.log('Email notification sent successfully');
+                        }
+                    }).catch(error => {
+                        console.log('Email notification failed:', error);
+                    });
+                }
+                
+                closeModal();
+                e.target.reset();
+            };
+
+            const addUser = (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const newUser = {
+                    id: Date.now().toString(),
+                    name: formData.get('name'),
+                    role: formData.get('role'),
+                    email: formData.get('email'),
+                    department: formData.get('department'),
+                    archived: false
+                };
+                const updated = [...users, newUser];
+                setUsers(updated);
+                localStorage.setItem('smart-classroom-users', JSON.stringify(updated));
+                closeModal();
+                e.target.reset();
+            };
+
+            const getEquipmentName = (equipmentId) => {
+                const item = resources.find(e => e.id === equipmentId);
+                return item ? item.name : 'Unknown';
+            };
+
+            const updateSettings = (key, value) => {
+                const updated = { ...settings, [key]: value };
+                setSettings(updated);
+                localStorage.setItem('smart-classroom-settings', JSON.stringify(updated));
+            };
+
+            // Authentication Functions
+            const handleLogin = (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const enteredKey = formData.get('accessKey');
+                const enteredPin = formData.get('pin');
+                
+                if (enteredKey === ADMIN_CREDENTIALS.accessKey && enteredPin === ADMIN_CREDENTIALS.pin) {
+                    setIsAuthenticated(true);
+                    setShowLogin(false);
+                    setAdminName(ADMIN_CREDENTIALS.name);
+                    setLoginAttempts(0);
+                    localStorage.setItem('smart-classroom-admin-session', 'authenticated');
+                    localStorage.setItem('smart-classroom-admin-name', ADMIN_CREDENTIALS.name);
+                } else {
+                    setLoginAttempts(prev => prev + 1);
+                    alert('Invalid Access Key or PIN. Please try again.');
+                    if (loginAttempts >= 2) {
+                        alert('Too many failed attempts. Please contact the administrator.');
+                    }
+                }
+            };
+
+            const handleLogout = () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    setIsAuthenticated(false);
+                    setShowLogin(true);
+                    setAdminName('');
+                    localStorage.removeItem('smart-classroom-admin-session');
+                    localStorage.removeItem('smart-classroom-admin-name');
+                }
+            };
+
+            // Check authentication on load
+            useEffect(() => {
+                const session = localStorage.getItem('smart-classroom-admin-session');
+                const savedName = localStorage.getItem('smart-classroom-admin-name');
+                if (session === 'authenticated' && savedName) {
+                    setIsAuthenticated(true);
+                    setShowLogin(false);
+                    setAdminName(savedName);
+                }
+            }, []);
+
+            const activeResources = resources.filter(r => !r.archived);
+            const activeBookings = bookings.filter(b => !b.archived);
+            const activeUsers = users.filter(u => !u.archived);
+
+            const renderDashboard = () => (
+                <div className="animate-in">
+                    <div className="header">
+                        <h2>Dashboard Overview</h2>
+                        <p>Welcome back! Here's what's happening in your smart classrooms today.</p>
+                    </div>
+
+                    <div className="action-bar">
+                        <div className="action-bar-right">
+                            <button className="btn btn-success" onClick={() => exportAllData()}>
+                                <Icons.Download /> Export All Data
+                            </button>
+                            <label className="btn btn-secondary">
+                                <Icons.Upload /> Restore Backup
+                                <input type="file" accept=".json" onChange={restoreData} style={{ display: 'none' }} />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="stats-grid">
+                        <div className="stat-card">
+                            <div className="stat-value" style={{ color: 'var(--success)' }}>{activeResources.filter(r => r.status === 'available').length}</div>
+                            <div className="stat-label">Available Resources</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value" style={{ color: 'var(--warning)' }}>{activeResources.filter(r => r.status === 'in-use').length}</div>
+                            <div className="stat-label">In Use</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value" style={{ color: 'var(--danger)' }}>{activeResources.filter(r => r.status === 'maintenance').length}</div>
+                            <div className="stat-label">Under Maintenance</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value" style={{ color: 'var(--primary)' }}>{activeBookings.length}</div>
+                            <div className="stat-label">Active Bookings</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">Today's Schedule</h3>
+                            <button className="btn btn-primary" onClick={() => openModal('booking')}>
+                                <Icons.Plus /> New Booking
+                            </button>
+                        </div>
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Resource</th>
+                                    <th>Teacher</th>
+                                    <th>Subject</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {activeBookings.map(booking => (
+                                    <tr key={booking.id}>
+                                        <td>{booking.time}</td>
+                                        <td>{booking.resourceName || getEquipmentName(booking.resourceId)}</td>
+                                        <td>{booking.teacher}</td>
+                                        <td>{booking.subject}</td>
+                                        <td>
+                                            <span className={`status-badge ${booking.status === 'active' ? 'status-in-use' : 'status-available'}`}>
+                                                {booking.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
+            const renderResources = () => (
+                <div className="animate-in">
+                    <div className="header">
+                        <h2>Resource Management</h2>
+                        <p>Manage all classroom equipment and resources</p>
+                    </div>
+
+                    <div className="action-bar">
+                        <div className="action-bar-left">
+                            <button className="btn btn-primary" onClick={() => openModal('resource')}>
+                                <Icons.Plus /> Add Resource
+                            </button>
+                        </div>
+                        <div className="action-bar-right">
+                            <button className="btn btn-success" onClick={() => exportToCSV(activeResources, 'resources')}>
+                                <Icons.Download /> Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">Active Resources</h3>
+                        </div>
+                        <div className="resource-grid">
+                            {activeResources.map(resource => (
+                                <div key={resource.id} className="resource-item">
+                                    <div className="resource-info">
+                                        <div className="resource-name">{resource.name}</div>
+                                        <div className="resource-meta">
+                                            <span className="meta-item">📦 {resource.type}</span>
+                                            <span className="meta-item">📍 {resource.location}</span>
+                                            <span className="meta-item">🔧 {resource.lastMaintenance}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <span className={`status-badge status-${resource.status}`}>
+                                            {resource.status}
+                                        </span>
+                                        <div className="resource-actions">
+                                            <button className="btn btn-sm btn-secondary" onClick={() => archiveItem(resource.id, 'resource')} title="Archive">
+                                                <Icons.Archive />
+                                            </button>
+                                            <button className="btn btn-sm btn-danger" onClick={() => deleteItem(resource.id, 'resource')} title="Delete">
+                                                <Icons.Trash />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {resources.filter(r => r.archived).length > 0 && (
+                        <div className="card">
+                            <div className="card-header">
+                                <h3 className="card-title">Archived Resources</h3>
+                            </div>
+                            <div className="resource-grid">
+                                {resources.filter(r => r.archived).map(resource => (
+                                    <div key={resource.id} className="resource-item">
+                                        <div className="resource-info">
+                                            <div className="resource-name">{resource.name}</div>
+                                            <div className="resource-meta">
+                                                <span className="meta-item">📦 {resource.type}</span>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                            <span className="status-badge status-archived">Archived</span>
+                                            <div className="resource-actions">
+                                                <button className="btn btn-sm btn-success" onClick={() => archiveItem(resource.id, 'resource')} title="Restore">
+                                                    <Icons.Upload />
+                                                </button>
+                                                <button className="btn btn-sm btn-danger" onClick={() => deleteItem(resource.id, 'resource')} title="Delete">
+                                                    <Icons.Trash />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+
+            const renderSchedule = () => (
+                <div className="animate-in">
+                    <div className="header">
+                        <h2>Schedule & Bookings</h2>
+                        <p>View and manage resource reservations</p>
+                    </div>
+
+                    <div className="action-bar">
+                        <div className="action-bar-left">
+                            <button className="btn btn-primary" onClick={() => openModal('booking')}>
+                                <Icons.Plus /> New Booking
+                            </button>
+                        </div>
+                        <div className="action-bar-right">
+                            <button className="btn btn-success" onClick={() => exportToCSV(activeBookings, 'bookings')}>
+                                <Icons.Download /> Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">This Week</h3>
+                        </div>
+                        <div className="schedule-grid">
+                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+                                <div key={day} className="schedule-day">
+                                    <div className="day-header">{day}</div>
+                                    <div className="day-number">{10 + index}</div>
+                                    <div className="day-events">
+                                        {index < 5 && (
+                                            <>
+                                                <div className="event-dot" style={{ background: 'var(--primary)' }}></div>
+                                                <div className="event-dot" style={{ background: 'var(--success)' }}></div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">All Bookings</h3>
+                        </div>
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Resource</th>
+                                    <th>Teacher</th>
+                                    <th>Subject</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {activeBookings.map(booking => (
+                                    <tr key={booking.id}>
+                                        <td>{booking.date}</td>
+                                        <td>{booking.time}</td>
+                                        <td>{booking.resourceName || getEquipmentName(booking.resourceId)}</td>
+                                        <td>{booking.teacher}</td>
+                                        <td>{booking.subject}</td>
+                                        <td>
+                                            <span className={`status-badge ${booking.status === 'active' ? 'status-in-use' : 'status-available'}`}>
+                                                {booking.status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button className="btn btn-sm btn-secondary" onClick={() => archiveItem(booking.id, 'booking')} title="Archive">
+                                                    <Icons.Archive />
+                                                </button>
+                                                <button className="btn btn-sm btn-danger" onClick={() => deleteItem(booking.id, 'booking')} title="Delete">
+                                                    <Icons.Trash />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
+            const renderUsers = () => (
+                <div className="animate-in">
+                    <div className="header">
+                        <h2>User Management</h2>
+                        <p>Manage teachers, students, and administrators</p>
+                    </div>
+
+                    <div className="action-bar">
+                        <div className="action-bar-left">
+                            <button className="btn btn-primary" onClick={() => openModal('user')}>
+                                <Icons.Plus /> Add User
+                            </button>
+                        </div>
+                        <div className="action-bar-right">
+                            <button className="btn btn-success" onClick={() => exportToCSV(activeUsers, 'users')}>
+                                <Icons.Download /> Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">All Users</h3>
+                        </div>
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Email</th>
+                                    <th>Department</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {activeUsers.map(user => (
+                                    <tr key={user.id}>
+                                        <td>{user.name}</td>
+                                        <td>
+                                            <span className={`status-badge ${user.role === 'Admin' ? 'status-in-use' : 'status-available'}`}>
+                                                {user.role}
+                                            </span>
+                                        </td>
+                                        <td>{user.email}</td>
+                                        <td>{user.department}</td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button className="btn btn-sm btn-secondary" onClick={() => archiveItem(user.id, 'user')} title="Archive">
+                                                    <Icons.Archive />
+                                                </button>
+                                                <button className="btn btn-sm btn-danger" onClick={() => deleteItem(user.id, 'user')} title="Delete">
+                                                    <Icons.Trash />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
+            const renderAnalytics = () => (
+                <div className="animate-in">
+                    <div className="header">
+                        <h2>Analytics & Reports</h2>
+                        <p>View usage statistics and performance metrics</p>
+                    </div>
+
+                    <div className="stats-grid">
+                        <div className="stat-card">
+                            <div className="stat-value" style={{ color: 'var(--primary)' }}>
+                                {activeResources.length > 0 ? Math.round((activeResources.filter(r => r.status === 'in-use').length / activeResources.length) * 100) : 0}%
+                            </div>
+                            <div className="stat-label">Average Utilization</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value" style={{ color: 'var(--success)' }}>{activeBookings.length}</div>
+                            <div className="stat-label">Total Sessions</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value" style={{ color: 'var(--warning)' }}>{activeResources.length}</div>
+                            <div className="stat-label">Active Resources</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value" style={{ color: 'var(--secondary)' }}>{activeUsers.length}</div>
+                            <div className="stat-label">Total Users</div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">Resource Usage Overview</h3>
+                        </div>
+                        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                            <p>📊 Interactive charts showing resource usage patterns</p>
+                            <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
+                                Track peak hours, popular equipment, and utilization trends
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const renderSettings = () => {
+                // Check if user is Admin
+                if (currentUserRole !== 'Admin') {
+                    return (
+                        <div className="animate-in">
+                            <div className="header">
+                                <h2>Settings</h2>
+                                <p>System configuration and preferences</p>
+                            </div>
+
+                            <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔒</div>
+                                <h2 style={{ marginBottom: '1rem', color: 'var(--warning)' }}>Access Restricted</h2>
+                                <p style={{ fontSize: '1.1rem', marginBottom: '2rem', color: 'var(--text-secondary)' }}>
+                                    Only administrators can access the Settings page.
+                                </p>
+                                <div style={{ 
+                                    background: 'rgba(245, 158, 11, 0.1)', 
+                                    border: '1px solid var(--warning)',
+                                    borderRadius: '0.75rem',
+                                    padding: '1.5rem',
+                                    maxWidth: '600px',
+                                    margin: '0 auto',
+                                    textAlign: 'left'
+                                }}>
+                                    <div style={{ fontWeight: '600', marginBottom: '0.75rem', color: 'var(--warning)', fontSize: '1.1rem' }}>
+                                        ⚠️ Admin-Only Features:
+                                    </div>
+                                    <div style={{ marginBottom: '1rem', lineHeight: '1.8' }}>
+                                        The following features are restricted to administrators only:
+                                    </div>
+                                    <ul style={{ lineHeight: '1.8', fontSize: '0.95rem', marginLeft: '1.5rem', marginBottom: '1rem' }}>
+                                        <li>⚙️ <strong>Settings</strong> - System configuration</li>
+                                        <li>📥 <strong>Download/Export</strong> - CSV exports and backups</li>
+                                        <li>🗑️ <strong>Delete</strong> - Permanent removal of items</li>
+                                        <li>📦 <strong>Archive</strong> - Archive/unarchive items</li>
+                                        <li>♻️ <strong>Restore</strong> - Restore from backup</li>
+                                    </ul>
+                                    <div style={{ 
+                                        background: 'rgba(99, 102, 241, 0.1)', 
+                                        border: '1px solid var(--primary)',
+                                        borderRadius: '0.5rem',
+                                        padding: '1rem',
+                                        marginTop: '1rem'
+                                    }}>
+                                        <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: 'var(--primary)' }}>
+                                            ✅ You CAN Access:
+                                        </div>
+                                        <ul style={{ lineHeight: '1.6', fontSize: '0.9rem', marginLeft: '1.5rem' }}>
+                                            <li>Dashboard (view all data)</li>
+                                            <li>Create new bookings</li>
+                                            <li>Add new resources</li>
+                                            <li>View schedules and reports</li>
+                                            <li>Access analytics</li>
+                                        </ul>
+                                    </div>
+                                    <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+                                        <strong>Need admin access?</strong><br/>
+                                        Contact: delasallettc@yahoo.fr or +250786480036
+                                    </p>
+                                </div>
+                                <div style={{ marginTop: '2rem' }}>
+                                    <button 
+                                        className="btn btn-primary"
+                                        onClick={() => setCurrentView('dashboard')}
+                                    >
+                                        ← Return to Dashboard
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                // Admin access - show full settings
+                return (
+                <div className="animate-in">
+                    <div className="header">
+                        <h2>Settings</h2>
+                        <p>Configure your smart classroom system preferences</p>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">General Settings</h3>
+                        </div>
+                        <div style={{ padding: '1rem' }}>
+                            <div className="form-group">
+                                <label className="form-label">School Name</label>
+                                <input 
+                                    type="text" 
+                                    className="form-input"
+                                    value={settings.schoolName}
+                                    onChange={(e) => updateSettings('schoolName', e.target.value)}
+                                    placeholder="Enter school name"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Default Booking Duration (minutes)</label>
+                                <input 
+                                    type="number" 
+                                    className="form-input"
+                                    value={settings.defaultBookingDuration}
+                                    onChange={(e) => updateSettings('defaultBookingDuration', e.target.value)}
+                                    min="15"
+                                    step="15"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Language</label>
+                                <select 
+                                    className="form-select"
+                                    value={settings.language}
+                                    onChange={(e) => updateSettings('language', e.target.value)}
+                                >
+                                    <option value="en">English</option>
+                                    <option value="fr">Français</option>
+                                    <option value="rw">Kinyarwanda</option>
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Theme</label>
+                                <select 
+                                    className="form-select"
+                                    value={settings.theme}
+                                    onChange={(e) => updateSettings('theme', e.target.value)}
+                                >
+                                    <option value="dark">Dark Mode</option>
+                                    <option value="light">Light Mode</option>
+                                    <option value="auto">Auto (System)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">🔑 User Role & Access Control</h3>
+                        </div>
+                        <div style={{ padding: '1rem' }}>
+                            <div className="form-group">
+                                <label className="form-label">Current User Role</label>
+                                <select 
+                                    className="form-select"
+                                    value={currentUserRole}
+                                    onChange={(e) => setCurrentUserRole(e.target.value)}
+                                >
+                                    <option value="Admin">Admin (Full Access)</option>
+                                    <option value="Teacher">Teacher / Tutor</option>
+                                    <option value="Student">Student</option>
+                                    <option value="Staff">Staff</option>
+                                </select>
+                            </div>
+                            
+                            <div style={{ 
+                                background: 'rgba(99, 102, 241, 0.1)', 
+                                border: '1px solid var(--primary)',
+                                borderRadius: '0.5rem',
+                                padding: '1rem',
+                                fontSize: '0.9rem',
+                                lineHeight: '1.6'
+                            }}>
+                                <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: 'var(--primary)' }}>
+                                    ℹ️ Access Levels:
+                                </div>
+                                <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+                                    <li><strong>Admin:</strong> Full access to all features including Settings</li>
+                                    <li><strong>Teacher/Tutor:</strong> Access to Dashboard, Resources, Bookings, Users, Analytics (Settings restricted)</li>
+                                    <li><strong>Student:</strong> View-only access to schedules and resources</li>
+                                    <li><strong>Staff:</strong> Access to Resources and Bookings management</li>
+                                </ul>
+                                <div style={{ 
+                                    marginTop: '1rem',
+                                    padding: '0.75rem',
+                                    background: 'rgba(245, 158, 11, 0.1)',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--warning)'
+                                }}>
+                                    <strong style={{ color: 'var(--warning)' }}>⚠️ Note for Tutors:</strong>
+                                    <p style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
+                                        If you see a 🔒 lock icon next to Settings, it means only administrators can access that page.
+                                        Contact your system administrator for any configuration changes.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">Notifications</h3>
+                        </div>
+                        <div style={{ padding: '1rem' }}>
+                            <label className="setting-item">
+                                <input 
+                                    type="checkbox"
+                                    checked={settings.emailNotifications}
+                                    onChange={(e) => updateSettings('emailNotifications', e.target.checked)}
+                                />
+                                <div className="setting-info">
+                                    <div className="setting-title">Email Notifications</div>
+                                    <div className="setting-description">Receive email updates about bookings and resources</div>
+                                </div>
+                            </label>
+
+                            <label className="setting-item">
+                                <input 
+                                    type="checkbox"
+                                    checked={settings.bookingReminders}
+                                    onChange={(e) => updateSettings('bookingReminders', e.target.checked)}
+                                />
+                                <div className="setting-info">
+                                    <div className="setting-title">Booking Reminders</div>
+                                    <div className="setting-description">Get reminders 15 minutes before your booking starts</div>
+                                </div>
+                            </label>
+
+                            <label className="setting-item">
+                                <input 
+                                    type="checkbox"
+                                    checked={settings.maintenanceAlerts}
+                                    onChange={(e) => updateSettings('maintenanceAlerts', e.target.checked)}
+                                />
+                                <div className="setting-info">
+                                    <div className="setting-title">Maintenance Alerts</div>
+                                    <div className="setting-description">Alert when equipment needs maintenance</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">📧 Email Integration (Formspree)</h3>
+                        </div>
+                        <div style={{ padding: '1rem' }}>
+                            <label className="setting-item">
+                                <input 
+                                    type="checkbox"
+                                    checked={settings.formspreeEnabled}
+                                    onChange={(e) => updateSettings('formspreeEnabled', e.target.checked)}
+                                />
+                                <div className="setting-info">
+                                    <div className="setting-title">Enable Email Notifications</div>
+                                    <div className="setting-description">Send booking confirmations to your email via Formspree</div>
+                                </div>
+                            </label>
+
+                            <div className="form-group" style={{ marginTop: '1rem' }}>
+                                <label className="form-label">Formspree Endpoint URL</label>
+                                <input 
+                                    type="text" 
+                                    className="form-input"
+                                    value={settings.formspreeEndpoint}
+                                    onChange={(e) => updateSettings('formspreeEndpoint', e.target.value)}
+                                    placeholder="https://formspree.io/f/YOUR_FORM_ID"
+                                />
+                                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                                    Get your free Formspree endpoint at <a href="https://formspree.io" target="_blank" style={{ color: 'var(--primary)' }}>formspree.io</a>
+                                </div>
+                            </div>
+
+                            <div style={{ 
+                                background: 'rgba(99, 102, 241, 0.1)', 
+                                border: '1px solid var(--primary)',
+                                borderRadius: '0.5rem',
+                                padding: '1rem',
+                                marginTop: '1rem',
+                                fontSize: '0.85rem'
+                            }}>
+                                <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: 'var(--primary)' }}>
+                                    ℹ️ How to Setup Formspree:
+                                </div>
+                                <ol style={{ marginLeft: '1.5rem', lineHeight: '1.8' }}>
+                                    <li>Go to <a href="https://formspree.io" target="_blank" style={{ color: 'var(--primary)' }}>formspree.io</a></li>
+                                    <li>Sign up for a free account</li>
+                                    <li>Create a new form</li>
+                                    <li>Copy your form endpoint (e.g., https://formspree.io/f/abc123)</li>
+                                    <li>Paste it above and enable email notifications</li>
+                                    <li>You'll receive booking emails at: <strong>delasallettc@yahoo.fr</strong></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">Data Management</h3>
+                        </div>
+                        <div style={{ padding: '1rem' }}>
+                            <label className="setting-item">
+                                <input 
+                                    type="checkbox"
+                                    checked={settings.autoArchiveOldBookings}
+                                    onChange={(e) => updateSettings('autoArchiveOldBookings', e.target.checked)}
+                                />
+                                <div className="setting-info">
+                                    <div className="setting-title">Auto-Archive Old Bookings</div>
+                                    <div className="setting-description">Automatically archive bookings older than 30 days</div>
+                                </div>
+                            </label>
+
+                            <div className="action-bar" style={{ marginTop: '1.5rem' }}>
+                                <button 
+                                    className="btn btn-success"
+                                    onClick={() => exportAllData()}
+                                >
+                                    <Icons.Download /> Create Backup
+                                </button>
+                                <button 
+                                    className="btn btn-danger"
+                                    onClick={() => {
+                                        if (confirm('Are you sure you want to clear all data? This cannot be undone!')) {
+                                            localStorage.clear();
+                                            window.location.reload();
+                                        }
+                                    }}
+                                >
+                                    <Icons.Trash /> Clear All Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">System Information</h3>
+                        </div>
+                        <div style={{ padding: '1rem' }}>
+                            <div className="resource-grid">
+                                <div className="resource-item">
+                                    <div className="resource-info">
+                                        <div className="resource-name">Version</div>
+                                        <div className="resource-meta">
+                                            <span className="meta-item">1.0.0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="resource-item">
+                                    <div className="resource-info">
+                                        <div className="resource-name">Total Resources</div>
+                                        <div className="resource-meta">
+                                            <span className="meta-item">{resources.length} registered</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="resource-item">
+                                    <div className="resource-info">
+                                        <div className="resource-name">Total Users</div>
+                                        <div className="resource-meta">
+                                            <span className="meta-item">{users.length} registered</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="resource-item">
+                                    <div className="resource-info">
+                                        <div className="resource-name">Total Bookings</div>
+                                        <div className="resource-meta">
+                                            <span className="meta-item">{bookings.length} all-time</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                );
+            };
+
+            const renderModal = () => {
+                if (!showModal) return null;
+
+                if (modalType === 'resource') {
+                    return (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h3>Add New Resource</h3>
+                                </div>
+                                <div className="modal-body">
+                                    <form onSubmit={addResource}>
+                                        <div className="form-group">
+                                            <label className="form-label">Resource Name</label>
+                                            <input 
+                                                type="text" 
+                                                name="name" 
+                                                className="form-input" 
+                                                required 
+                                                placeholder="e.g., Smart Board - Room 101"
+                                            />
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Type</label>
+                                            <input 
+                                                type="text" 
+                                                name="type" 
+                                                className="form-input" 
+                                                required 
+                                                list="equipmentTypes"
+                                                placeholder="Type or select equipment type..."
+                                                autoComplete="off"
+                                            />
+                                            <datalist id="equipmentTypes">
+                                                <option value="Remote Control" />
+                                                <option value="XO Laptop" />
+                                                <option value="Lenovo Laptop" />
+                                                <option value="Lenovo Tablet" />
+                                                <option value="Extension Charger" />
+                                                <option value="Screen Projector" />
+                                                <option value="Coding Lab" />
+                                                <option value="Speaker" />
+                                                <option value="Tables" />
+                                            </datalist>
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Location</label>
+                                            <input 
+                                                type="text" 
+                                                name="location" 
+                                                className="form-input" 
+                                                required 
+                                                list="roomsList"
+                                                placeholder="Type or select room..."
+                                                autoComplete="off"
+                                            />
+                                            <datalist id="roomsList">
+                                                <option value="Room 1" />
+                                                <option value="Room 2" />
+                                                <option value="Room 3" />
+                                            </datalist>
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Status</label>
+                                            <select name="status" className="form-select" required>
+                                                <option value="available">Available</option>
+                                                <option value="in-use">In Use</option>
+                                                <option value="maintenance">Maintenance</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Last Maintenance</label>
+                                            <input type="date" name="lastMaintenance" className="form-input" required />
+                                        </div>
+                                        
+                                        <div style={{ display: 'flex', gap: '1rem' }}>
+                                            <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Add Resource</button>
+                                            <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (modalType === 'booking') {
+                    return (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h3>New Booking</h3>
+                                </div>
+                                <div className="modal-body">
+                                    <form onSubmit={addBooking}>
+                                        <div className="form-group">
+                                            <label className="form-label">Resource</label>
+                                            <input 
+                                                type="text" 
+                                                name="resourceInput" 
+                                                className="form-input" 
+                                                required 
+                                                list="availableResources"
+                                                placeholder="Type or select resource..."
+                                                autoComplete="off"
+                                            />
+                                            <datalist id="availableResources">
+                                                {activeResources.filter(r => r.status === 'available').map(resource => (
+                                                    <option key={resource.id} value={resource.name} />
+                                                ))}
+                                            </datalist>
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Teacher</label>
+                                            <input 
+                                                type="text" 
+                                                name="teacher" 
+                                                className="form-input" 
+                                                required 
+                                                placeholder="Teacher name"
+                                            />
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Date</label>
+                                            <input type="date" name="date" className="form-input" required />
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Time</label>
+                                            <input type="text" name="time" className="form-input" required placeholder="e.g., 09:00-10:30" />
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Subject</label>
+                                            <input 
+                                                type="text" 
+                                                name="subject" 
+                                                className="form-input" 
+                                                required 
+                                                list="subjectsList"
+                                                placeholder="Type or select subject..."
+                                                autoComplete="off"
+                                            />
+                                            <datalist id="subjectsList">
+                                                <option value="RELIGION" />
+                                                <option value="GEOGRAPHY" />
+                                                <option value="HISTORY" />
+                                                <option value="ECONOMY" />
+                                                <option value="FOUNDATION OF EDUCATION" />
+                                                <option value="CREATIVE PERFORMANCE" />
+                                                <option value="SPECIAL NEED EDUCATION" />
+                                                <option value="MATHEMATICS" />
+                                                <option value="BIOLOGY" />
+                                                <option value="PHYSICS" />
+                                                <option value="CHEMISTRY" />
+                                                <option value="TEACHING METHODS" />
+                                                <option value="ENGLISH" />
+                                                <option value="FRENCH" />
+                                                <option value="KINYARWANDA" />
+                                            </datalist>
+                                        </div>
+                                        
+                                        <div style={{ display: 'flex', gap: '1rem' }}>
+                                            <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Create Booking</button>
+                                            <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (modalType === 'user') {
+                    return (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h3>Add New User</h3>
+                                </div>
+                                <div className="modal-body">
+                                    <form onSubmit={addUser}>
+                                        <div className="form-group">
+                                            <label className="form-label">Full Name</label>
+                                            <input 
+                                                type="text" 
+                                                name="name" 
+                                                className="form-input" 
+                                                required 
+                                                placeholder="e.g., John Doe"
+                                            />
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Role</label>
+                                            <select name="role" className="form-select" required>
+                                                <option value="">Select role...</option>
+                                                <option value="Teacher">Teacher</option>
+                                                <option value="Student">Student</option>
+                                                <option value="Admin">Admin</option>
+                                                <option value="Staff">Staff</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Email</label>
+                                            <input 
+                                                type="email" 
+                                                name="email" 
+                                                className="form-input" 
+                                                required 
+                                                placeholder="email@delasallettc.edu" 
+                                            />
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">Department</label>
+                                            <input 
+                                                type="text" 
+                                                name="department" 
+                                                className="form-input" 
+                                                required 
+                                                list="departments"
+                                                placeholder="e.g., Mathematics"
+                                                autoComplete="off"
+                                            />
+                                            <datalist id="departments">
+                                                <option value="Mathematics" />
+                                                <option value="Science" />
+                                                <option value="English" />
+                                                <option value="Social Studies" />
+                                                <option value="Physical Education" />
+                                                <option value="Arts" />
+                                                <option value="Technology" />
+                                                <option value="Administration" />
+                                            </datalist>
+                                        </div>
+                                        
+                                        <div style={{ display: 'flex', gap: '1rem' }}>
+                                            <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                                                Add User
+                                            </button>
+                                            <button type="button" className="btn btn-secondary" onClick={closeModal}>
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+            };
+
+            return (
+                <div className="app-container">
+                    {/* Login Screen */}
+                    {showLogin && !isAuthenticated && (
+                        <div className="modal" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
+                            <div className="modal-content" style={{ maxWidth: '500px' }}>
+                                <div className="modal-header" style={{ textAlign: 'center' }}>
+                                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔐</div>
+                                    <h3>Admin Access Required</h3>
+                                    <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', opacity: 0.9 }}>
+                                        Smart Classroom Resource Management System
+                                    </p>
+                                </div>
+                                <div className="modal-body">
+                                    <form onSubmit={handleLogin}>
+                                        <div className="form-group">
+                                            <label className="form-label">Access Key</label>
+                                            <input 
+                                                type="text" 
+                                                name="accessKey" 
+                                                className="form-input" 
+                                                required 
+                                                placeholder="Enter your access key"
+                                                autoComplete="off"
+                                            />
+                                        </div>
+                                        
+                                        <div className="form-group">
+                                            <label className="form-label">PIN</label>
+                                            <input 
+                                                type="password" 
+                                                name="pin" 
+                                                className="form-input" 
+                                                required 
+                                                placeholder="Enter your 6-digit PIN"
+                                                maxLength="6"
+                                                pattern="[0-9]{6}"
+                                            />
+                                        </div>
+
+                                        {loginAttempts > 0 && (
+                                            <div style={{ 
+                                                background: 'rgba(239, 68, 68, 0.2)', 
+                                                border: '1px solid var(--danger)',
+                                                padding: '0.75rem',
+                                                borderRadius: '0.5rem',
+                                                marginBottom: '1rem',
+                                                fontSize: '0.85rem',
+                                                color: 'var(--danger)'
+                                            }}>
+                                                ⚠️ Invalid credentials. {3 - loginAttempts} attempts remaining.
+                                            </div>
+                                        )}
+
+                                        <div style={{ 
+                                            background: 'rgba(99, 102, 241, 0.1)', 
+                                            border: '1px solid var(--primary)',
+                                            padding: '1rem',
+                                            borderRadius: '0.5rem',
+                                            marginBottom: '1.5rem',
+                                            fontSize: '0.85rem'
+                                        }}>
+                                            <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
+                                                ℹ️ Administrator Contact:
+                                            </div>
+                                            <div>Venant Tuyisingize</div>
+                                            <div>📱 +250786480036</div>
+                                            <div>📧 vepucela22@gmail.com</div>
+                                        </div>
+                                        
+                                        <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+                                            🔓 Access System
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Main Application */}
+                    {isAuthenticated && (
+                        <>
+                    <div className="main-wrapper">
+                        <div className="sidebar">
+                            <div className="logo">
+                                <div className="logo-container">
+                                    <label htmlFor="logo-upload">
+                                        <div className="logo-image">
+                                            {logo ? (
+                                                <img src={logo} alt="School Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+                                            ) : (
+                                                '🏫'
+                                            )}
+                                        </div>
+                                    </label>
+                                    <input 
+                                        id="logo-upload" 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={handleLogoUpload}
+                                        className="logo-upload"
+                                    />
+                                </div>
+                                <div className="logo-text">
+                                    <h1>Smart Classroom</h1>
+                                    <p>Resource Manager</p>
+                                </div>
+                            </div>
+
+                            {/* Admin Info */}
+                            <div style={{ 
+                                padding: '1rem 2rem',
+                                borderBottom: '1px solid var(--border)',
+                                marginBottom: '1rem'
+                            }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                                    LOGGED IN AS
+                                </div>
+                                <div style={{ fontWeight: '600', color: 'var(--primary)' }}>
+                                    {adminName}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                                    Administrator
+                                </div>
+                            </div>
+
+                            <div className={`nav-item ${currentView === 'dashboard' ? 'active' : ''}`} onClick={() => setCurrentView('dashboard')}>
+                                <Icons.Dashboard />
+                                <span>Dashboard</span>
+                            </div>
+                            <div className={`nav-item ${currentView === 'resources' ? 'active' : ''}`} onClick={() => setCurrentView('resources')}>
+                                <Icons.Resources />
+                                <span>Resources</span>
+                            </div>
+                            <div className={`nav-item ${currentView === 'schedule' ? 'active' : ''}`} onClick={() => setCurrentView('schedule')}>
+                                <Icons.Schedule />
+                                <span>Schedule</span>
+                            </div>
+                            <div className={`nav-item ${currentView === 'users' ? 'active' : ''}`} onClick={() => setCurrentView('users')}>
+                                <Icons.Users />
+                                <span>Users</span>
+                            </div>
+                            <div className={`nav-item ${currentView === 'analytics' ? 'active' : ''}`} onClick={() => setCurrentView('analytics')}>
+                                <Icons.Analytics />
+                                <span>Analytics</span>
+                            </div>
+                            <div className={`nav-item ${currentView === 'settings' ? 'active' : ''}`} onClick={() => setCurrentView('settings')}>
+                                <Icons.Settings />
+                                <span>Settings</span>
+                                {currentUserRole !== 'Admin' && (
+                                    <span style={{ 
+                                        marginLeft: 'auto',
+                                        fontSize: '0.75rem',
+                                        background: 'rgba(245, 158, 11, 0.2)',
+                                        color: 'var(--warning)',
+                                        padding: '0.15rem 0.5rem',
+                                        borderRadius: '0.25rem',
+                                        fontWeight: '600'
+                                    }}>
+                                        🔒
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Logout Button */}
+                            <div 
+                                className="nav-item" 
+                                onClick={handleLogout}
+                                style={{ 
+                                    marginTop: 'auto',
+                                    borderTop: '1px solid var(--border)',
+                                    color: 'var(--danger)'
+                                }}
+                            >
+                                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span>Logout</span>
+                            </div>
+                        </div>
+
+                        <div className="main-content">
+                            {currentView === 'dashboard' && renderDashboard()}
+                            {currentView === 'resources' && renderResources()}
+                            {currentView === 'schedule' && renderSchedule()}
+                            {currentView === 'users' && renderUsers()}
+                            {currentView === 'analytics' && renderAnalytics()}
+                            {currentView === 'settings' && renderSettings()}
+                        </div>
+                    </div>
+
+                    <div className="footer">
+                        <div className="footer-content">
+                            <div className="footer-grid">
+                                <div className="footer-section">
+                                    <h3>About Us</h3>
+                                    <p>Welcome to the Smart Classroom Resource Management System!</p>
+                                    <p>Our mission is to make teaching and learning more efficient by providing a simple, reliable way to manage classroom resources.</p>
+                                    <p>We help schools track equipment, schedule smart tools, and analyze usage so that teachers can focus on teaching and students can focus on learning.</p>
+                                    <p>Our vision is to empower education through technology—ensuring every classroom has the right resources at the right time.</p>
+                                    <p>Built for educators, students, and administrators, our platform values accessibility, innovation, and collaboration.</p>
+                                    <p style={{ fontWeight: '600', color: 'var(--primary)' }}>Together, we're building smarter classrooms for a smarter future.</p>
+                                </div>
+
+                                <div className="footer-section">
+                                    <h3>Contact Information</h3>
+                                    <div className="contact-item">
+                                        <div>📍</div>
+                                        <div>
+                                            <strong>Location</strong>
+                                            <p>Gicumbi, Rwanda</p>
+                                        </div>
+                                    </div>
+                                    <div className="contact-item">
+                                        <div>🏫</div>
+                                        <div>
+                                            <strong>School</strong>
+                                            <p>TTC de la Salle Byumba</p>
+                                        </div>
+                                    </div>
+                                    <div className="contact-item">
+                                        <div>✉️</div>
+                                        <div>
+                                            <strong>Email</strong>
+                                            <p>delasallettc@yahoo.fr</p>
+                                        </div>
+                                    </div>
+                                    <div className="contact-item">
+                                        <div>📱</div>
+                                        <div>
+                                            <strong>WhatsApp</strong>
+                                            <p>+250786480036</p>
+                                        </div>
+                                    </div>
+                                    <div className="contact-item">
+                                        <div>📺</div>
+                                        <div>
+                                            <strong>YouTube Channel</strong>
+                                            <p>
+                                                <a 
+                                                    href="https://youtube.com/@venanttuyisingize-g8h?si=wze-DREoZ0xsGCPY" 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    style={{ color: 'var(--primary)', textDecoration: 'none' }}
+                                                >
+                                                    @venanttuyisingize-g8h
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="footer-bottom">
+                                <p>© 2026 TTC de la Salle Byumba - Smart Classroom Resource Management System</p>
+                                <p style={{ marginTop: '0.5rem' }}>Empowering Education Through Technology</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {renderModal()}
+                        </>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<SmartClassroomApp />);
+    </script>
+</body>
+</html>
